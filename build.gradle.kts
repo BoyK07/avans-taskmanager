@@ -24,18 +24,22 @@ dependencies {
     implementation("io.ktor:ktor-server-core-jvm:$ktor_version")
     implementation("io.ktor:ktor-server-netty-jvm:$ktor_version")
     implementation("io.ktor:ktor-server-cors-jvm:$ktor_version")
-
-    // --- JSON support ---
     implementation("io.ktor:ktor-server-content-negotiation-jvm:$ktor_version")
     implementation("io.ktor:ktor-serialization-kotlinx-json-jvm:$ktor_version")
-
-    // --- Config & logging ---
+    implementation("io.ktor:ktor-server-status-pages-jvm:$ktor_version")
     implementation("io.ktor:ktor-server-config-yaml:$ktor_version")
+
+    // --- Logging ---
     implementation("ch.qos.logback:logback-classic:$logback_version")
-    implementation("io.ktor:ktor-server-core:3.3.1")
-    implementation("io.ktor:ktor-server-host-common:3.3.1")
-    implementation("io.ktor:ktor-server-status-pages:3.3.1")
-    implementation("io.ktor:ktor-server-core:3.3.1")
+
+    // --- DB stack ---
+    implementation("org.jetbrains.exposed:exposed-core:0.56.0")
+    implementation("org.jetbrains.exposed:exposed-dao:0.56.0")
+    implementation("org.jetbrains.exposed:exposed-jdbc:0.56.0")
+    implementation("org.jetbrains.exposed:exposed-kotlin-datetime:0.56.0")
+    implementation("com.zaxxer:HikariCP:5.1.0")
+    implementation("mysql:mysql-connector-j:9.1.0")
+    implementation("org.flywaydb:flyway-core:10.18.2")
 
     // --- Tests ---
     testImplementation("io.ktor:ktor-server-test-host-jvm:$ktor_version")

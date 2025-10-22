@@ -4,3 +4,10 @@ ktor:
       - space.sadcat.ApplicationKt.module
   deployment:
     port: 8080
+
+db:
+  driver: com.mysql.cj.jdbc.Driver
+  jdbcUrl: jdbc:mysql://localhost:3306/tasks?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC
+  user: root
+  password: password
+  maximumPoolSize: 5
