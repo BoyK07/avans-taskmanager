@@ -4,8 +4,10 @@ import io.ktor.server.application.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
 import space.sadcat.tasks.routes.v1.taskRoutes
+import space.sadcat.tasks.repository.TaskRepository
 
-fun Application.configureRouting() {
+
+fun Application.configureRouting(tasksRepo: TaskRepository) {
     routing {
         route("/api") {
             get("/health") {
@@ -13,7 +15,7 @@ fun Application.configureRouting() {
                 call.respondText("${phrases.random()} The API is responsive!")
             }
             route("/v1") {
-                taskRoutes()
+                taskRoutes(tasksRepo)
             }
         }
     }

@@ -38,7 +38,7 @@ dependencies {
     implementation("org.jetbrains.exposed:exposed-jdbc:0.56.0")
     implementation("org.jetbrains.exposed:exposed-kotlin-datetime:0.56.0")
     implementation("com.zaxxer:HikariCP:5.1.0")
-    implementation("mysql:mysql-connector-j:9.1.0")
+    implementation("com.mysql:mysql-connector-j:9.1.0")
     implementation("org.flywaydb:flyway-core:10.18.2")
 
     // --- Tests ---

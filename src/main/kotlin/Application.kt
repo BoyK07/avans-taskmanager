@@ -8,7 +8,9 @@ import io.ktor.server.response.*
 import io.ktor.serialization.kotlinx.json.*
 import kotlinx.serialization.json.Json
 import io.ktor.http.*
+import space.sadcat.db.DatabaseFactory
 import space.sadcat.http.ErrorResponse
+import space.sadcat.tasks.repository.TaskRepository
 
 
 fun main(args: Array<String>) {
@@ -47,6 +49,8 @@ fun Application.module() {
         allowCredentials = true
     }
 
-    configureRouting()
+    DatabaseFactory.init(environment)
+
+    configureRouting(TaskRepository())
 }
 

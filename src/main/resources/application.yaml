@@ -7,7 +7,7 @@ ktor:
 
 db:
   driver: com.mysql.cj.jdbc.Driver
-  jdbcUrl: jdbc:mysql://localhost:3306/tasks?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC
+  jdbcUrl: jdbc:mysql://localhost:3306/avans_task-manager?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC
   user: root
   password: password
   maximumPoolSize: 5
