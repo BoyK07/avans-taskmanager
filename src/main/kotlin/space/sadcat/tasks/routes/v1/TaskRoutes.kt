@@ -20,18 +20,21 @@ fun Route.taskRoutes(repo: TaskRepository) = route("/tasks") {
     }
 
     post {
-        val req = call.receiveOr400<CreateTaskRequest>() ?: return@post
-        if (req.title.isBlank()) return@post call.badRequest("Title cannot be empty")
+        val req = call.withValidBody<CreateTaskRequest> {
+            if (it.title.isBlank()) "Title cannot be empty" else null
+        } ?: return@post
 
-        val created = repo.create(req)
-        call.response.headers.append(HttpHeaders.Location, "/api/v1/tasks/${created.id}")
+        val created = repo.create(req).also {
+            call.response.headers.append(HttpHeaders.Location, "/api/v1/tasks/${it.id}")
+        }
         call.respond(HttpStatusCode.Created, created)
     }
 
     put("{id}") {
         val id = call.paramLong("id") ?: return@put call.badRequest("Invalid id")
-        val req = call.receiveOr400<UpdateTaskRequest>() ?: return@put
-        if (req.title.isBlank()) return@put call.badRequest("Title cannot be empty")
+        val req = call.withValidBody<UpdateTaskRequest> {
+            if (it.title.isBlank()) "Title cannot be empty" else null
+        } ?: return@put
 
         val updated = repo.update(id, req) ?: return@put call.notFound("Task not found")
         call.respond(updated)

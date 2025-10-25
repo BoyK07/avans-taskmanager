@@ -56,6 +56,39 @@ Unknown JSON fields are ignored by the server. JSON is pretty-printed in respons
 
 ---
 
+## Run
+
+```bash
+./gradlew run
+```
+
+## Test
+
+```bash
+./gradlew test
+```
+
+## Configuration
+
+Set DB credentials in `application.yaml`. Default profile uses MySQL via HikariCP.
+
+## API
+
+- `GET /api/v1/tasks`
+- `GET /api/v1/tasks/{id}`
+- `POST /api/v1/tasks` — `{ "title": "Task", "status": "TODO|IN_PROGRESS|DONE|REVIEW|BACKLOG" }`
+- `PUT /api/v1/tasks/{id}`
+- `DELETE /api/v1/tasks/{id}`
+
+## Notes (Portfolio)
+
+- OO: `TaskRepository` interface + `SqlTaskRepository` & `InMemoryTaskRepository` (polymorphism, DI).
+- FP: higher-order `withValidBody {}` for validation + scope functions in handlers.
+- Tests: 3+ unit, 1 integration (Ktor test engine).
+
+<!-- TODO: Add class diagram: TaskRepository, SqlTaskRepository, InMemoryTaskRepository, Routes, DatabaseFactory -->
+<!-- TODO: Portfolio: reflection (what went well, challenges, next steps), ISO 25010 (Maintainability, Reliability, Performance, Security-basic) -->
+
 ### Health
 
 - **GET** `/api/health`

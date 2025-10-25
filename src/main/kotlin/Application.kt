@@ -10,6 +10,8 @@ import kotlinx.serialization.json.Json
 import io.ktor.http.*
 import space.sadcat.db.DatabaseFactory
 import space.sadcat.http.ErrorResponse
+import space.sadcat.tasks.repository.SqlTaskRepository
+import space.sadcat.tasks.repository.InMemoryTaskRepository
 import space.sadcat.tasks.repository.TaskRepository
 
 
@@ -49,8 +51,12 @@ fun Application.module() {
         allowCredentials = true
     }
 
-    DatabaseFactory.init(environment)
+    val dbEnabled = environment.config.propertyOrNull("db.enabled")?.getString()?.toBoolean() ?: true
+    if (dbEnabled) {
+        DatabaseFactory.init(environment)
+    }
 
-    configureRouting(TaskRepository())
+    val repo: TaskRepository = if (dbEnabled) SqlTaskRepository() else InMemoryTaskRepository()
+    configureRouting(repo)
 }
 

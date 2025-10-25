@@ -25,3 +25,12 @@ suspend inline fun <reified T : Any> ApplicationCall.receiveOr400(): T? =
         badRequest("Invalid JSON body")
         null
     }
+
+// Higher-order validation helper (FP): receive + validate in one function
+suspend inline fun <reified T : Any> ApplicationCall.withValidBody(
+    crossinline validate: (T) -> String?
+): T? {
+    val body = try { receive<T>() } catch (_: Throwable) { badRequest("Invalid JSON"); return null }
+    val err = validate(body)
+    return if (err == null) body else { badRequest(err); null }
+}
