@@ -6,7 +6,7 @@ import space.sadcat.tasks.models.CreateTaskRequest
 import space.sadcat.tasks.models.Task
 import space.sadcat.tasks.models.UpdateTaskRequest
 
-class InMemoryTaskRepository : TaskRepository {
+class InMemoryTaskRepository : BaseTaskRepository(), TaskRepository {
     private val mutex = Mutex()
     private val store = LinkedHashMap<Long, Task>()
     private var seq = 0L
@@ -15,12 +15,14 @@ class InMemoryTaskRepository : TaskRepository {
     override suspend fun find(id: Long): Task? = mutex.withLock { store[id] }
     override suspend fun create(req: CreateTaskRequest): Task = mutex.withLock {
         val id = ++seq
-        val t = Task(id, req.title, req.status)
+        increaseCreateCount()
+        val t = buildTask(id, req)
         store[id] = t; t
     }
     override suspend fun update(id: Long, req: UpdateTaskRequest): Task? = mutex.withLock {
         val cur = store[id] ?: return null
-        val upd = cur.copy(title = req.title, status = req.status)
+		val upd = cur.copy(title = req.title, status = req.status)
+		if (cur == upd) return cur
         store[id] = upd; upd
     }
     override suspend fun delete(id: Long): Boolean = mutex.withLock { store.remove(id) != null }

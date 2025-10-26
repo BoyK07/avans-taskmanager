@@ -14,7 +14,7 @@ import space.sadcat.tasks.models.CreateTaskRequest
 import space.sadcat.tasks.models.Task
 import space.sadcat.tasks.models.UpdateTaskRequest
 
-class SqlTaskRepository : TaskRepository {
+class SqlTaskRepository : BaseTaskRepository(), TaskRepository {
 
     private fun toTask(row: ResultRow) = Task(
         id = row[Tasks.id].value,
@@ -32,7 +32,7 @@ class SqlTaskRepository : TaskRepository {
 
     override suspend fun create(req: CreateTaskRequest): Task = dbQuery {
         val newId = Tasks.insertAndGetId {
-            it[title] = req.title
+            it[title] = normalizeTitle(req.title)
             it[status] = req.status
         }.value
         Tasks.selectAll().where(Tasks.id eq newId).single().let(::toTask)

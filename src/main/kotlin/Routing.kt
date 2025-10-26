@@ -11,8 +11,18 @@ fun Application.configureRouting(tasksRepo: TaskRepository) {
     routing {
         route("/api") {
             get("/health") {
-                val phrases = arrayOf("Hello World!", "Hey there!", "Heyo!", "Good day!")
-                call.respondText("${phrases.random()} The API is responsive!")
+                val phrases = mutableListOf("Hello World!", "Hey there!", "Heyo!", "Good day!")
+                phrases.add("All good!")
+                val unique: Set<String> = phrases.toSet()
+
+                val any: Any? = if (unique.isEmpty()) null else unique.first()
+                val msg = when (any) {
+                    null -> "No phrases"
+                    is String -> any
+                    else -> "Unknown type"
+                }
+
+                call.respondText("$msg The API is responsive!")
             }
             route("/v1") {
                 taskRoutes(tasksRepo)
