@@ -1,239 +1,95 @@
-# todo-manager
+# Todo Manager (Ktor)
 
-This project was created using the [Ktor Project Generator](https://start.ktor.io).
+A concise Ktor REST API for managing tasks. It demonstrates repository abstraction (SQL and in-memory), robust JSON handling, and a wide range of Kotlin language features required for assessment.
 
-Here are some useful links to get you started:
+## Tech stack
+- Kotlin, Ktor
+- kotlinx.serialization (JSON)
+- Exposed + HikariCP (SQL)
+- JUnit (tests)
 
-- [Ktor Documentation](https://ktor.io/docs/home.html)
-- [Ktor GitHub page](https://github.com/ktorio/ktor)
-- The [Ktor Slack chat](https://app.slack.com/client/T09229ZC6/C0A974TJ9). You'll need
-  to [request an invite](https://surveys.jetbrains.com/s3/kotlin-slack-sign-up) to join.
-
-## Features
-
-Here's a list of features included in this project:
-
-| Name                                               | Description                                                 |
-|----------------------------------------------------|-------------------------------------------------------------|
-| [Routing](https://start.ktor.io/p/routing-default) | Allows to define structured routes and associated handlers. |
-
-## Building & Running
-
-To build or run the project, use one of the following tasks:
-
-| Task                                    | Description                                                          |
-|-----------------------------------------|----------------------------------------------------------------------|
-| `./gradlew test`                        | Run the tests                                                        |
-| `./gradlew build`                       | Build everything                                                     |
-| `./gradlew buildFatJar`                 | Build an executable JAR of the server with all dependencies included |
-| `./gradlew buildImage`                  | Build the docker image to use with the fat JAR                       |
-| `./gradlew publishImageToLocalRegistry` | Publish the docker image locally                                     |
-| `./gradlew run`                         | Run the server                                                       |
-| `./gradlew runDocker`                   | Run using the local docker image                                     |
-
-If the server starts successfully, you'll see the following output:
-
-```
-2024-12-04 14:32:45.584 [main] INFO  Application - Application started in 0.303 seconds.
-2024-12-04 14:32:45.682 [main] INFO  Application - Responding at http://0.0.0.0:8080
-```
-
-
-## API Reference
-
-### Base
-
-- **Base URL**: `http://localhost:8080`
-- **Prefix**: All API routes are under `/api`, versioned under `/api/v1`.
-- **Content-Type**: `application/json`
-- **Error shape**: All non-2xx errors return JSON:
-
-```json
-{ "error": "message" }
-```
-
-Unknown JSON fields are ignored by the server. JSON is pretty-printed in responses.
-
----
-
-## Run
-
+## Build & Run
 ```bash
+./gradlew build
 ./gradlew run
 ```
 
 ## Test
-
 ```bash
 ./gradlew test
 ```
 
 ## Configuration
-
-Set DB credentials in `application.yaml`. Default profile uses MySQL via HikariCP.
+- File: `src/main/resources/application.yaml`
+- Toggle DB usage with `db.enabled` (true = SQL via Exposed/Hikari, false = in-memory)
 
 ## API
-
-- `GET /api/v1/tasks`
-- `GET /api/v1/tasks/{id}`
-- `POST /api/v1/tasks` — `{ "title": "Task", "status": "TODO|IN_PROGRESS|DONE|REVIEW|BACKLOG" }`
-- `PUT /api/v1/tasks/{id}`
-- `DELETE /api/v1/tasks/{id}`
-
-## Notes (Portfolio)
-
-- OO: `TaskRepository` interface + `SqlTaskRepository` & `InMemoryTaskRepository` (polymorphism, DI).
-- FP: higher-order `withValidBody {}` for validation + scope functions in handlers.
-- Tests: 3+ unit, 1 integration (Ktor test engine).
-
-<!-- TODO: Add class diagram: TaskRepository, SqlTaskRepository, InMemoryTaskRepository, Routes, DatabaseFactory -->
-<!-- TODO: Portfolio: reflection (what went well, challenges, next steps), ISO 25010 (Maintainability, Reliability, Performance, Security-basic) -->
+- Base URL: `http://localhost:8080`
+- Prefix: `/api`, version: `/api/v1`
+- Content-Type: `application/json`
+- Error shape:
+```json
+{ "error": "message" }
+```
 
 ### Health
-
-- **GET** `/api/health`
-  - Returns plain text confirming the API is responsive.
-
-Example response body (text):
-
-```
-Hello World! The API is responsive!
-```
-
----
+- GET `/api/health` → plain text confirming API responsiveness
 
 ### Tasks
+- GET `/api/v1/tasks`
+- GET `/api/v1/tasks/{id}`
+- POST `/api/v1/tasks`
+- PUT `/api/v1/tasks/{id}`
+- DELETE `/api/v1/tasks/{id}`
 
-All task routes are under: `/api/v1/tasks`
-
-#### Model: Task
-
-```json
-{
-  "id": 1,
-  "title": "Write docs",
-  "status": "BACKLOG"
-}
-```
-
-#### Enum: Status
-
-One of: `BACKLOG`, `TODO`, `IN_PROGRESS`, `REVIEW`, `DONE`
-
----
-
-#### List tasks
-
-- **GET** `/api/v1/tasks`
-
-Response 200 JSON:
-
-```json
-[
-  { "id": 1, "title": "Write docs", "status": "BACKLOG" },
-  { "id": 2, "title": "Ship v1", "status": "IN_PROGRESS" }
-]
-```
-
-Errors:
-- 500 → `{ "error": "Unexpected server error" }`
-
----
-
-#### Get task by id
-
-- **GET** `/api/v1/tasks/{id}`
-
-Response 200 JSON:
-
+Models
 ```json
 { "id": 1, "title": "Write docs", "status": "BACKLOG" }
 ```
+Status enum: `BACKLOG|TODO|IN_PROGRESS|REVIEW|DONE`
 
-Errors:
-- 400 (invalid id) → `{ "error": "Invalid id" }`
-- 404 (missing) → `{ "error": "Task not found" }`
+## Project structure
+- `Application.kt` — entry point, plugins (ContentNegotiation, StatusPages, CORS), repo selection
+- `Routing.kt` — `/api` routes, `/api/v1` wiring
+- `space/sadcat/tasks/routes/v1/TaskRoutes.kt` — task handlers
+- `space/sadcat/tasks/models` — `Task`, `CreateTaskRequest`, `UpdateTaskRequest`
+- `space/sadcat/tasks/repository`
+  - `TaskRepository` (interface)
+  - `InMemoryTaskRepository` (mutex-backed map)
+  - `SqlTaskRepository` (Exposed CRUD)
+  - `BaseTaskRepository` (abstract base with utilities)
+- `space/sadcat/database` — `DatabaseFactory`, migrations (`Tasks`)
+- `space/sadcat/http/HttpHelpers.kt` — extension helpers and validation HOFs
 
----
+## Kotlin concepts demonstrated (where)
+- Program entry point, packages, imports: `Application.kt` (`main`, `module`)
+- Variables (`val`/`var`) and basic types: repositories, routes
+- Special types: `Any` (reified in helpers), `Unit` (explicit/implicit), `Nothing` (`fail` in `BaseTaskRepository.kt`)
+- Null safety: nullable types, safe calls `?.`, Elvis `?:` (e.g. `db.enabled` in `Application.kt`)
+- Control flow: early return, `when`, guards
+- Type checks and safe casts: `as?` in base; `when (any)` in health route
+- Collections: `List`, `Map` (repos); `MutableList`, `Set` (health)
+- OO concepts:
+  - Abstraction & encapsulation: `TaskRepository`, `BaseTaskRepository` (protected members)
+  - Inheritance/overriding: `InMemoryTaskRepository`/`SqlTaskRepository` extend base
+  - Abstract class: `BaseTaskRepository`
+  - Interfaces: `TaskRepository`
+  - Overloading: `buildTask(id, title, status)` vs `buildTask(id, req)`
+  - Polymorphism: swapping repo implementation behind the interface
+- Class, constructors, init-blocks: primary constructors throughout; `init` in base; explicit `this`
+- Equality: structural vs referential illustrated in `InMemoryTaskRepository.update`
+- Data class: `Task` vs regular classes
+- Visibility & property: `private`, `protected`, delegated properties (`by lazy`, `Delegates.observable`)
+- Member vs top-level functions: route handlers vs helpers in `HttpHelpers.kt`
+- Default & named arguments: defaults in signatures, named in calls
+- Extension functions: `ApplicationCall.badRequest`, `notFound`, `paramLong`
+- Top-level function: `configureRouting`, helpers
+- Companion object: in `BaseTaskRepository`
+- Object declaration (singleton): `DatabaseFactory`
+- Generics: `inline reified` in `HttpHelpers.kt`
+- Exception handling: try/catch in helpers, `StatusPages` global handler
+- FP: function types, higher-order functions (validation), trailing lambdas, implicit `it`, returning from lambda, lambda with receiver (Ktor DSL), scope functions (`apply`, `let`, `also`)
 
-#### Create task
-
-- **POST** `/api/v1/tasks`
-
-Request JSON (raw):
-
-```json
-{
-  "title": "Write docs",
-  "status": "TODO"
-}
-```
-
-Notes:
-- `title` is required and must be non-empty
-- `status` is optional; defaults to `BACKLOG` if omitted
-
-Response 201 JSON:
-
-```json
-{
-  "id": 3,
-  "title": "Write docs",
-  "status": "TODO"
-}
-```
-
-Response headers:
-- `Location: /api/tasks/{id}`
-
-Errors:
-- 400 (invalid JSON) → `{ "error": "Invalid JSON body" }`
-- 400 (validation) → `{ "error": "Title cannot be empty" }`
-
----
-
-#### Update task
-
-- **PUT** `/api/v1/tasks/{id}`
-
-Request JSON (raw):
-
-```json
-{
-  "title": "Write better docs",
-  "status": "IN_PROGRESS"
-}
-```
-
-Notes:
-- Both `title` and `status` are required
-- `title` must be non-empty
-
-Response 200 JSON:
-
-```json
-{
-  "id": 3,
-  "title": "Write better docs",
-  "status": "IN_PROGRESS"
-}
-```
-
-Errors:
-- 400 (invalid id) → `{ "error": "Invalid id" }`
-- 400 (invalid JSON) → `{ "error": "Invalid JSON body" }`
-- 400 (validation) → `{ "error": "Title cannot be empty" }`
-- 404 (missing) → `{ "error": "Task not found" }`
-
----
-
-#### Delete task
-
-- **DELETE** `/api/v1/tasks/{id}`
-
-Response 204 No Content (no body)
-
-Errors:
-- 400 (invalid id) → `{ "error": "Invalid id" }`
-- 404 (missing) → `{ "error": "Task not found" }`
-
+## Notes
+- Unknown JSON fields are ignored; responses are pretty-printed.
+- CORS is enabled (permissive) for demo purposes.
